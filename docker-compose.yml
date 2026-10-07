@@ -1,0 +1,34 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: dispatch-db
+    environment:
+      POSTGRES_USER: dispatch_user
+      POSTGRES_PASSWORD: dispatch_password
+      POSTGRES_DB: dispatch_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dispatch-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=dispatch_db
+      - DB_USER=dispatch_user
+      - DB_PASSWORD=dispatch_password
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - APP_CORS_ALLOWED_ORIGINS=${APP_CORS_ALLOWED_ORIGINS}
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:
